@@ -12,7 +12,8 @@
 <configuration>
 ...
   <appSettings>
-    <add key="log4net.Config" value="Config\HedgeInv.Log4net.config" />
+    <add key="log4net.Config" value="Config\log4net.config" />
+    <add key="log4net.Config.Watch" value="True"/>
   </appSettings>
 </configuration
 ```
@@ -52,10 +53,89 @@
 ``` csharp
 class Program
 {
-    internal static readonly ILog logger = LogManager.GetLogger(typeof(Program));
+    private static readonly ILog logger = LogManager.GetLogger(typeof(Program));
     static void Main(string[] args)
     {
         logger.Debug("Hello, Log4net");
+    }
+}
+```
+執行程式, 測試結束
+## Config ##
+在專案下新增目錄[Configuration], 新增一個類別[ConfigData]
+加入程式
+``` csharp
+class ConfigData
+{
+    public string field;
+}
+```
+新增[Config\configData.json], 設定[複製到輸出目錄]為"有更新時才複製"
+``` json
+{
+  "field" : "ConfigData.field"
+}
+```
+修改[App.config], 加上
+``` xml
+<appSettings>
+  ...
+  <add key="configData" value="Config\configData.json"/>
+</appSettings>
+```
+修改[Program.cs]
+``` csharp
+class Program
+{
+    private static readonly ILog logger = LogManager.GetLogger(typeof(Program));
+    internal static readonly Configuration.ConfigData configData;
+    static Program()
+    {
+        string configDataPath = ConfigurationManager.AppSettings["configData"];
+        configData = JsonConvert.DeserializeObject<Configuration.ConfigData>(File.ReadAllText(configDataPath));
+    }
+    static void Main(string[] args)
+    {
+        logger.Debug("Hello, Log4net");
+        logger.Info(configData.field);
+    }
+}
+```
+要加入參考[System.Configration]
+執行程式, 測試結束
+## ConnectionString ##
+修改[App.config]
+``` xml
+<configuration>
+    ...
+    <connectionStrings configSource="Config\connections.config"/>
+    ...
+</configuration>
+```
+新增[Config\connections.config], 設定[複製到輸出目錄]為"有更新時才複製"
+``` xml
+<connectionStrings>
+  <add name="DB" connectionString="Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=PeterDB;Integrated Security=True;" />
+</connectionStrings>
+```
+修改[Program.cs]
+``` csharp
+class Program
+{
+    private static readonly ILog logger = LogManager.GetLogger(typeof(Program));
+    internal static readonly Configuration.ConfigData configData;
+    internal static readonly string connectionString;
+    static Program()
+    {
+        string configDataPath = ConfigurationManager.AppSettings["configData"];
+        configData = JsonConvert.DeserializeObject<Configuration.ConfigData>(File.ReadAllText(configDataPath));
+        connectionString = ConfigurationManager.ConnectionStrings["DB"].ConnectionString;
+    }
+    static void Main(string[] args)
+    {
+        logger.Debug("Hello, Log4net");
+        logger.Info(configData.field);
+        logger.Info(connectionString);
     }
 }
 ```
