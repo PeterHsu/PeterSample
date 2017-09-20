@@ -13,6 +13,7 @@ namespace ConfigAndLog4net
     class Program
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(Program));
+        private static readonly ILog loggerDB = LogManager.GetLogger("DB");
         internal static readonly Configuration.ConfigData configData;
         internal static readonly string connectionString;
         static Program()
@@ -24,6 +25,7 @@ namespace ConfigAndLog4net
         static void Main(string[] args)
         {
             logger.Debug("Hello, Log4net");
+            loggerDB.Debug("Hi, DB");
             logger.Info(configData.field);
             logger.Info(connectionString);
         }
