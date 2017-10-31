@@ -31,7 +31,10 @@ namespace MCChat
             IPAddress group = IPAddress.Parse(txtGroupID.Text.Trim());
             int port = int.Parse(txtPort.Text.Trim());
 
-            client = new UdpClient(port);
+            client = new UdpClient();
+            client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            client.Client.Bind(new IPEndPoint(IPAddress.Any, port));
+
             client.JoinMulticastGroup(group, 10);
             multiCastEP = new IPEndPoint(group, port);
 
